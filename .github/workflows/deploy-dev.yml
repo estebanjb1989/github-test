@@ -1,0 +1,33 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://dev.github-test.com
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          echo "Building app for DEVELOPMENT..."
+          echo "NEXT_PUBLIC_ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "Build complete."
+
+      - name: Deploy to dev.github-test.com
+        run: |
+          echo "Deploying commit $GITHUB_SHA to https://dev.github-test.com"
+          echo "Deploy finished. Live at https://dev.github-test.com"

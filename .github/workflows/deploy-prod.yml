@@ -1,0 +1,33 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://github-test.com
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          echo "Building app for PRODUCTION..."
+          echo "NEXT_PUBLIC_ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "Build complete."
+
+      - name: Deploy to github-test.com
+        run: |
+          echo "Deploying commit $GITHUB_SHA to https://github-test.com"
+          echo "Deploy finished. Live at https://github-test.com"
