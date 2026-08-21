@@ -1,0 +1,29 @@
+# The DEV FRONTEND deploy mechanism (permanent). AWS Amplify serves
+# app-dev.adadvisor.ai from the `develop` branch (branch-level env vars:
+# api-dev API URL, NEXT_PUBLIC_ENVIRONMENT=dev, dev Stripe/Meta creds), and
+# app.adadvisor.ai from `main` (app-level vars, NEXT_PUBLIC_ENVIRONMENT=prod).
+# Amplify branch apps are keyed by git branch name, so under trunk-based
+# development `develop` lives on purely as a deploy pointer: nobody commits to
+# it — this workflow fast-forwards it on every main push, keeping the dev
+# frontend byte-identical to trunk with dev config. Delete this only if the
+# dev frontend moves to its own Amplify app tracking main.
+name: Mirror main to develop
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fast-forward develop to main
+        run: git push origin HEAD:develop
