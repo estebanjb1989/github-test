@@ -1,7 +1,8 @@
 name: Deploy to Production
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches: [main]
 
 permissions:
@@ -13,6 +14,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'dev-only')
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -20,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Build
         run: |
@@ -29,5 +33,12 @@ jobs:
 
       - name: Deploy to github-test.com
         run: |
-          echo "Deploying commit $GITHUB_SHA to https://github-test.com"
+          echo "Deploying PR #${{ github.event.pull_request.number }} (${{ github.event.pull_request.title }}) to https://github-test.com"
           echo "Deploy finished. Live at https://github-test.com"
+
+  skipped:
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'dev-only')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain skip
+        run: echo "PR labeled 'dev-only' — skipping production deploy for this merge."
