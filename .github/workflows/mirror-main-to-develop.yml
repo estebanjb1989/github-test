@@ -10,8 +10,7 @@
 name: Mirror main to develop
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [main]
 
 permissions:
@@ -19,22 +18,13 @@ permissions:
 
 jobs:
   mirror:
-    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'prod-only')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
           token: ${{ secrets.MIRROR_TOKEN }}
 
       - name: Fast-forward develop to main
         run: git push origin HEAD:develop
-
-  skipped:
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'prod-only')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Explain skip
-        run: echo "PR labeled 'prod-only' — skipping mirror to develop for this merge."
