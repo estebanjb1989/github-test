@@ -10,8 +10,7 @@
 name: Mirror main to develop
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [main]
 
 permissions:
@@ -19,13 +18,11 @@ permissions:
 
 jobs:
   mirror:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
           token: ${{ secrets.MIRROR_TOKEN }}
 
