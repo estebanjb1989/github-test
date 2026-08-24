@@ -26,5 +26,5 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.MIRROR_TOKEN }}
 
-      - name: Fast-forward develop to main
-        run: git push origin HEAD:develop
+      - name: Force-push develop to main
+        run: git push --force origin HEAD:develop
