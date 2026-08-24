@@ -12,7 +12,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tagged: ${{ steps.tags.outputs.tagged }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if this commit has a git tag
+        id: tags
+        run: |
+          TAGS=$(git tag --points-at "$GITHUB_SHA")
+          echo "Tags on this commit: $TAGS"
+          if [ -n "$TAGS" ]; then
+            echo "tagged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tagged=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
+    needs: check-tag
+    if: needs.check-tag.outputs.tagged != 'true'
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -31,3 +54,11 @@ jobs:
         run: |
           echo "Deploying commit $GITHUB_SHA to https://github-test.com"
           echo "Deploy finished. Live at https://github-test.com"
+
+  skipped:
+    needs: check-tag
+    if: needs.check-tag.outputs.tagged == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain skip
+        run: echo "Commit $GITHUB_SHA has a git tag — skipping production deploy."
