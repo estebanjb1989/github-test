@@ -43,6 +43,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Exclude not-yet-promoted tagged commits from the build
+        run: |
+          for TAG in $(git tag --merged HEAD); do
+            SHA=$(git rev-list -n 1 "$TAG")
+            echo "Reverting diff introduced by $TAG ($SHA) — not promoted to prod yet"
+            git revert --no-commit "$SHA"
+          done
+          echo "Files present in src/ for this build:"
+          ls src/
 
       - name: Build
         run: |
